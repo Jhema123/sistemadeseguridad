@@ -1,0 +1,10 @@
+# Ignorar archivos de video
+*.avi
+
+# Ignorar imágenes
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
+*.tiff
