@@ -27,12 +27,14 @@ class CameraController:
 
     def agregar_camara(self):
         nombre = self.view.input_nombre.text().strip()
-        ruta = self.view.input_ruta.text().strip()
+        ruta = self.view.obtener_ruta_seleccionada()
         if not nombre or not ruta:
             return
-        tipo = "USB" if ruta.isdigit() else "IP"
+        tipo = "USB"
+        print(f"➡ Agregando cámara: {nombre} ({ruta})")
         self.model.agregar_camara(nombre, tipo, ruta)
         self.actualizar_lista()
+
 
     def eliminar_camara(self, ruta):
         self.model.eliminar_camara(ruta)
