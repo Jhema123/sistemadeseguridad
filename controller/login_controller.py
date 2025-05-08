@@ -25,7 +25,7 @@ class LoginController:
             QMessageBox.information(self.vista, "Acceso concedido", f"¡Bienvenido, {nombre}!")
             self.vista.close()
 
-            dashboard_controller = DashboardController(user_id, nombre)
+            dashboard_controller = DashboardController(nombre, user_id )
             self.dashboard = dashboard_controller.view
             self.dashboard.show()
         else:

@@ -35,3 +35,6 @@ class CameraModel:
             return "inactiva"
         except:
             return "inactiva"
+        
+    def contar_camaras_inactivas(self):
+        return self.collection.count_documents({"estado": "inactiva"})

@@ -2,9 +2,9 @@
 import os
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-    QSizePolicy, QTabWidget, QSpacerItem, QGroupBox, QFrame, QScrollArea
+    QSizePolicy, QTabWidget, QSpacerItem, QGroupBox, QFrame, QScrollArea, QColorDialog
 )
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QColor
 from PyQt5.QtCore import Qt, QTimer, QTime, QSize
 
 class DashboardView(QWidget):
@@ -15,6 +15,7 @@ class DashboardView(QWidget):
         self.setGeometry(100, 50, 1200, 800)
         self.label_usuario = QLabel(f"👤 Usuario: {self.usuario}")
         self.label_usuario.setStyleSheet("font-size: 10pt; color: white;")
+
         self.setup_ui()
 
     def setup_ui(self):
@@ -33,12 +34,9 @@ class DashboardView(QWidget):
 
         barra_superior.addStretch()
 
-        self.btn_alerta = QPushButton()
-        self.btn_alerta.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "icons", "alarm.png")))
-        self.btn_alerta.setIconSize(QSize(20, 20))
-        self.btn_alerta.setFixedSize(30, 30)
-        self.btn_alerta.setStyleSheet("background-color: transparent;")
-        barra_superior.addWidget(self.btn_alerta)
+        self.notif_view = NotificationView()
+        self.notif_view.mousePressEvent = self.abrir_configuracion_camaras
+        barra_superior.addWidget(self.notif_view)
 
         barra_superior.addWidget(self.label_usuario)
 
@@ -106,6 +104,11 @@ class DashboardView(QWidget):
     def eliminar_pestana(self, index):
         self.tabs.removeTab(index)
 
+    def abrir_configuracion_camaras(self, event):
+        if event.button() == Qt.LeftButton:
+            self.controller.abrir_config()
+
+
     def get_tab_index(self):
         return self.tabs.currentIndex()
 
@@ -119,3 +122,39 @@ class DashboardView(QWidget):
         
     def mostrar_nombre_usuario(self, nombre):
         self.label_usuario.setText(f"👤 Usuario: {nombre}")
+
+    def actualizar_notificacion_camaras(self, cantidad):
+        if hasattr(self, 'notif_view'):
+            self.notif_view.contador.setText(str(cantidad))
+            self.notif_view.contador.setVisible(cantidad > 0)
+            self.notif_view.setVisible(cantidad > 0)
+
+class NotificationView(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(30)
+        self.setAutoFillBackground(True)
+
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor("#3A3A3A"))
+        self.setPalette(palette)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(5, 2, 5, 2)
+
+        self.icono = QLabel("🔔")
+        self.icono.setStyleSheet("color: white; font-size: 14px;")
+
+        self.contador = QLabel("0")
+        self.contador.setStyleSheet("color: white; font-size: 14px;")
+        self.contador.setVisible(False)
+
+        self.texto = QLabel("Cámaras con fallas")
+        self.texto.setStyleSheet("color: white; font-size: 14px;")
+
+        layout.addWidget(self.icono)
+        layout.addWidget(self.contador)
+        layout.addWidget(self.texto)
+
+        self.setLayout(layout)
+        self.setVisible(False)

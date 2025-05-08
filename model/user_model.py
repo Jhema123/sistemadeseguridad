@@ -25,5 +25,5 @@ class UserModel:
         update = {"nombre": nombre}
         if nueva_contrasena:
             update["contrasena"] = nueva_contrasena
-        self.collection.update_one({"id_usu": user_id}, {"$set": update})
+        self.collection.update_one({"id_usu": str(user_id)}, {"$set": update})
 

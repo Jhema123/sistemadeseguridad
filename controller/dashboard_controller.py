@@ -27,6 +27,7 @@ class DashboardController:
     def __init__(self, usuario,user_id):
         self.user_id = user_id
         self.modelo = DashboardModel()
+        self.lista_camaras_ctrl = CameraController()
         self.view = DashboardView(self, usuario)  # 👈 AQUÍ: self.view, no self.vista
         self.view.tabs.addTab(self.crear_menu(), "New")
         self.view.show()
@@ -103,6 +104,19 @@ class DashboardController:
         self.abrir_en_pestana(self.recording_controller.mostrar(), "Playback")
 
     def abrir_config(self):
+        for i in range(self.view.tabs.count()):
+            if self.view.tabs.tabText(i) == "📷 Cámaras":
+                self.view.tabs.setCurrentIndex(i)
+                return
+            
+    def abrir_config(self):
+    # Verificar si ya existe la pestaña 📷 Cámaras
+        for i in range(self.view.tabs.count()):
+            if self.view.tabs.tabText(i) == "📷 Cámaras":
+                self.view.tabs.setCurrentIndex(i)
+                return
+
+        # Si no existe, la crea
         self.lista_camaras_ctrl = CameraController()
         self.view.insertar_pestana(self.lista_camaras_ctrl.view, "📷 Cámaras")
 
@@ -125,16 +139,10 @@ class DashboardController:
 
     def verificar_alertas(self):
         try:
-            cliente = MongoClient("mongodb://localhost:27017/")
-            db = cliente["vigilancia_ia"]
-            camaras = db["camaras"]
-            fallas = camaras.count_documents({"estado": False})
-            if fallas > 0:
-                self.view.btn_alerta.setStyleSheet("background-color: #cc0000; border-radius: 4px;")
-                self.view.btn_alerta.setToolTip(f"{fallas} cámara(s) con fallas")
-            else:
-                self.view.btn_alerta.setStyleSheet("background-color: transparent;")
-                self.view.btn_alerta.setToolTip("Sin alertas")
-        except:
-            self.view.btn_alerta.setStyleSheet("background-color: #ff9900;")
-            self.view.btn_alerta.setToolTip("Error al verificar alertas")
+            cantidad = self.lista_camaras_ctrl.obtener_total_inactivas()
+            self.view.actualizar_notificacion_camaras(cantidad)
+        except Exception as e:
+            print("Error al verificar alertas:", e)
+            self.view.actualizar_notificacion_camaras(0)
+
+

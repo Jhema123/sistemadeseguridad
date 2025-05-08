@@ -44,3 +44,6 @@ class CameraController:
         self.timer = QTimer()
         self.timer.timeout.connect(self.actualizar_lista)
         self.timer.start(10000)  # Verifica cada 10 segundos
+
+    def obtener_total_inactivas(self):
+        return self.model.contar_camaras_inactivas()
