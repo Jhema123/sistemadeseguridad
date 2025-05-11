@@ -1,12 +1,11 @@
 
 import cv2
-from pymongo import MongoClient
+from database.connection import mongo_connection
 
 class CameraModel:
     def __init__(self):
-        self.client = MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["vigilancia_ia"]
-        self.collection = self.db["camaras"]
+        self.collection = mongo_connection.get_collection("camaras")
+
 
     def listar_camaras(self):
         return list(self.collection.find())

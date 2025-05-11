@@ -1,12 +1,10 @@
-from pymongo import MongoClient
+from database.connection import mongo_connection
 from datetime import datetime, timedelta
 
 class GrabacionesModel:
     def __init__(self):
-        self.client = MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["vigilancia_ia"]
-        self.collection = self.db["grabaciones"]
-
+        self.collection = mongo_connection.get_collection("grabaciones")
+  
     def obtener_grabaciones_por_camara_y_rango(self, camara, inicio, fin):
         return list(self.collection.find({
             "camara": camara,

@@ -1,10 +1,8 @@
-from pymongo import MongoClient
+from database.connection import mongo_connection
 
 class AlertConfigModel:
     def __init__(self):
-        self.client = MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["vigilancia_ia"]
-        self.collection = self.db["alert_config"]
+        self.collection = mongo_connection.get_collection("alert_config")
 
     def cargar_config(self):
         config = self.collection.find_one({})

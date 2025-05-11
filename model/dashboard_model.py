@@ -1,19 +1,18 @@
 # dashboard_model.py
+# dashboard_model.py
 
-from pymongo import MongoClient
+from database.connection import mongo_connection
 
 class DashboardModel:
     def __init__(self):
-        self.client = MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["vigilancia_ia"]
+        self.collection = mongo_connection.get_collection("camaras")
 
     def obtener_estado_camaras(self):
         """
-        Retorna la cantidad de cámaras con fallas (estado: False).
+        Retorna la cantidad de cámaras con fallas (estado: 'inactiva').
         """
         try:
-            camaras = self.db["camaras"]
-            fallas = camaras.count_documents({"estado": False})
+            fallas = self.collection.count_documents({"estado": "inactiva"})
             return fallas
         except Exception as e:
             print("Error al obtener estado de cámaras:", e)
@@ -21,6 +20,6 @@ class DashboardModel:
 
     def cerrar_conexion(self):
         """
-        Cierra la conexión con MongoDB.
+        Este método ya no es necesario con mongo_connection, pero se deja para compatibilidad.
         """
-        self.client.close()
+        pass  # Con mongo_connection la conexión se reutiliza

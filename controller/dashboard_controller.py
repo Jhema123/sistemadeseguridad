@@ -133,10 +133,6 @@ class DashboardController:
         self.config_user = UserConfigController(self.user_id)
         self.config_user.mostrar()
 
-    def cerrar_pestana(self, index):
-        if self.view.tabs.tabText(index) != "+":
-            self.view.tabs.removeTab(index)
-
     def verificar_alertas(self):
         try:
             cantidad = self.lista_camaras_ctrl.obtener_total_inactivas()
@@ -144,5 +140,11 @@ class DashboardController:
         except Exception as e:
             print("Error al verificar alertas:", e)
             self.view.actualizar_notificacion_camaras(0)
+
+    def cerrar_pestana(self, index):
+        widget = self.view.tabs.widget(index)
+        if hasattr(widget, "controller") and hasattr(widget.controller, "detener_todas_las_camaras"):
+            widget.controller.detener_todas_las_camaras()
+        self.view.tabs.removeTab(index)
 
 

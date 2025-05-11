@@ -31,7 +31,11 @@ class LiveViewModel:
         return disponibles
 
     def iniciar_captura(self, index):
-        return cv2.VideoCapture(index)
+        cap = cv2.VideoCapture(index)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FPS, 30)
+        return cap
 
     def detectar_rostros(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

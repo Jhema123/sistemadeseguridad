@@ -1,12 +1,10 @@
 
-from pymongo import MongoClient
+from database.connection import mongo_connection
 from datetime import datetime
 
 class AlertasDB:
-    def __init__(self, uri="mongodb://localhost:27017/", db_name="vigilancia_ia", collection_name="alertas"):
-        self.client = MongoClient(uri)
-        self.db = self.client[db_name]
-        self.collection = self.db[collection_name]
+    def __init__(self):
+        self.collection = mongo_connection.get_collection("alertas")
 
     def insertar_alerta(self, mensaje):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

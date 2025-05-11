@@ -13,6 +13,8 @@ from model.alert_model import AlertasDB
 from model.config_grab_model import ConfigGrabModel
 from model.grabacion_model import GrabacionesModel
 from ultralytics import YOLO
+from PyQt5.QtCore import QThread
+from controller.camera_worker import CameraWorker  # Nuevo
 
 class LiveViewController:
     def __init__(self, model, view):
@@ -43,48 +45,30 @@ class LiveViewController:
         return dia in dias and inicio <= hora <= fin
 
     def assign_camera(self, index, widget):
-        def run():
-            cap = self.model.iniciar_captura(index)
-            if cap is None or not cap.isOpened():
-                print(f"❌ No se pudo iniciar la cámara {index}")
-                return
+        if index in self.camaras_activas:
+            print(f"⚠️ Cámara {index} ya está activa.")
+            return
 
-            self.yolo_model.to("cuda" if torch.cuda.is_available() else "cpu")
+        thread = QThread()
+        worker = CameraWorker(
+            index=index,
+            widget=widget,
+            model=self.model,
+            yolo_model=self.yolo_model,
+            anti_spoof_model=self.model.anti_spoofing_model,
+            grabacion_model=self.grabaciones_model,
+            config_grab=self.configuracion_grab
+        )
 
-            nombre_archivo = f"grabacion_cam_{index}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.avi"
-            ruta_salida = os.path.join("grabaciones", nombre_archivo)
-            os.makedirs("grabaciones", exist_ok=True)
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.frame_ready.connect(self.mostrar_frame)
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
 
-            grabador = None
-            inicio_grabacion = None
-            ya_registrado = False
-
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret or not widget or sip.isdeleted(widget):
-                    break
-
-                frame = cv2.flip(frame, 1)
-                self.detectar_personas(frame)
-                rostros = self.model.detectar_rostros(frame)
-                self.procesar_rostros(rostros, frame, index)
-
-                grabador, inicio_grabacion, ya_registrado = self.grabar_video_si_es_necesario(
-                    frame, grabador, index, ruta_salida, inicio_grabacion, ya_registrado
-                )
-
-                self.mostrar_frame(widget, frame)
-
-            cap.release()
-            if grabador:
-                grabador.release()
-                self.grabaciones_model.actualizar_fin_grabacion(index, ruta_salida, datetime.now())
-                print(f"📁 Grabación cerrada correctamente: {ruta_salida}")
-
-        t = threading.Thread(target=run)
-        t.daemon = True
-        self.camaras_activas[index] = t
-        t.start()
+        self.camaras_activas[index] = (thread, worker)
+        thread.start()
 
     def detectar_personas(self, frame):
         try:
@@ -171,4 +155,10 @@ class LiveViewController:
             widget.setPixmap(pix)
         except Exception as e:
             print(f"❌ Error al mostrar frame: {e}")
-            print(f"❌ Error al mostrar frame: {e}")
+
+    def detener_todas_las_camaras(self):
+        for index, (thread, worker) in self.camaras_activas.items():
+            worker.stop()
+            thread.quit()
+            thread.wait()
+        self.camaras_activas.clear()
