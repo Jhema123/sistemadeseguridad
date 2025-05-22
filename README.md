@@ -1,39 +1,104 @@
-Historia 1: Detección de personas reales, fotos u objetos
-Descripción del Proceso:
-Cuando el sistema está en funcionamiento, cada cuadro capturado por las cámaras es enviado al módulo de análisis facial. Este módulo procesa la imagen utilizando algoritmos de visión artificial para clasificarla como "REAL", "FOTO" u "OBJETO".
-Si se detecta una persona real, el sistema genera una alerta inmediata (sonora y/o visual), muestra un marcador sobre la imagen (“REAL”), y registra el evento en la base de datos. Si se detecta una foto u objeto, no se genera alerta, pero se puede registrar la clasificación para fines de auditoría.
+# 📷 Sistema de Vigilancia Inteligente con IA
 
-Historia 2: Acceso a grabaciones de cámaras
-Descripción del Proceso:
-El usuario ingresa al módulo de reproducción desde el Dashboard. Selecciona la cámara y la fecha de interés. El sistema consulta la base de datos de grabaciones, obtiene los archivos correspondientes y los muestra en la interfaz.
-El usuario puede reproducir el video, pausar, avanzar, retroceder o, si lo desea, descargar o cortar un segmento específico del material. Toda la interacción se realiza desde una interfaz intuitiva que permite revisar eventos pasados de forma eficiente.
+Este proyecto implementa un sistema de vigilancia basado en inteligencia artificial que permite monitorear cámaras en tiempo real, detectar personas reales frente a la cámara, generar alertas, grabar evidencia, y gestionar usuarios y configuraciones, todo bajo una arquitectura Modelo-Vista-Controlador (MVC).
 
-Historia 3: Recepción de alertas por intrusos
-Descripción del Proceso:
-Durante el análisis en vivo, si el sistema clasifica una imagen como "REAL", automáticamente se activa un flujo de alerta. Esto incluye la reproducción de un sonido (ej. alert.mp3), la aparición de una notificación en la interfaz y el registro del evento en la base de datos con detalles como la hora, fecha y cámara involucrada.
-El personal de seguridad visualiza la alerta desde el panel de notificaciones (Alerts.xaml) y puede actuar de forma inmediata.
+## 🧠 Características Principales
 
-Historia 4: Configuración de horarios de grabación
-Descripción del Proceso:
-El usuario accede al módulo de configuración de grabación y selecciona la cámara, el horario de inicio y la duración deseada. Estos parámetros son almacenados y utilizados por el sistema para activar automáticamente la grabación en los momentos definidos.
-El sistema usa temporizadores para verificar constantemente si una cámara está dentro de un horario activo. Si lo está, se inicia la grabación y se guarda el archivo resultante en una ruta específica, además de registrar la información en la base de datos.
+- Detección facial con validación anti-spoofing (personas reales vs fotos/objetos)
+- Visualización en vivo (LiveView) con múltiples cámaras
+- Grabación automática programada por horarios
+- Reproducción y gestión de grabaciones
+- Generación y configuración de alertas en tiempo real
+- Monitoreo del estado de cámaras (activa/inactiva)
+- Gestión de usuarios y roles (administrador, cadete, invitado)
 
-Historia 5: Configuración del tipo de alertas
-Descripción del Proceso:
-Desde la vista de configuración de alertas, el usuario define el tipo de notificación que desea recibir ante eventos: solo visual, solo sonora o ambas. También puede seleccionar el archivo de sonido que quiere reproducir.
-El sistema guarda estas preferencias y las aplica automáticamente cuando se genera una alerta, asegurando que el comportamiento del sistema se adapte a las necesidades del entorno o del usuario.
+## 🗂️ Estructura del Proyecto
 
-Historia 6: Estado de las cámaras
-Descripción del Proceso:
-El sistema ejecuta de forma periódica un escaneo de las cámaras conectadas. Cada una es representada con un indicador visual: verde si está operativa, rojo si no responde.
-Si una cámara deja de enviar señal, su estado cambia automáticamente y se registra un evento de desconexión. Al volver a estar disponible, su estado se actualiza a verde. Esta información es visible desde el Dashboard para monitoreo continuo.
+```bash
+Proyecto/
+│
+├── controller/           # Controladores de lógica de negocio
+│   ├── dashboard_controller.py
+│   ├── liveview_controller.py
+│   └── ...
+│
+├── model/                # Acceso a datos y modelos de IA
+│   ├── user_model.py
+│   ├── camera_model.py
+│   ├── spoof_model/      # Modelo de detección de falsificaciones
+│   └── ...
+│
+├── view/                 # Interfaz gráfica con PyQt5
+│   ├── dashboard_view.py
+│   ├── liveview_view.py
+│   └── ...
+│
+├── database/             # Conexión y configuración de base de datos
+│   └── conexion.py
+│
+├── anti_spoofing_model.h5  # Modelo entrenado para detección facial real/falsa
+├── yolov8s.pt              # Modelo YOLOv8 para detección de personas
+├── main.py                 # Punto de entrada principal
+└── README.md               # Documentación general del sistema
+```
 
-Historia 7: Adición de nuevas cámaras
-Descripción del Proceso:
-Cuando el usuario accede a la vista LiveView, el sistema detecta automáticamente todas las cámaras disponibles en el sistema. Estas se listan en una barra lateral como disponibles para usar.
-El usuario puede arrastrar una de estas cámaras a cualquier celda del visor. Al soltarla, el sistema inicia automáticamente la transmisión en vivo de dicha cámara en la celda asignada.
+## 💻 Requisitos
 
-Historia 8: Gestión de usuarios y roles
-Descripción del Proceso:
-El administrador accede a la vista de gestión de usuarios. Desde allí puede registrar un nuevo usuario, asignarle un nombre, contraseña y rol (administrador, cadete, invitado).
-También puede editar usuarios existentes o eliminarlos. Cuando un usuario inicia sesión, el sistema valida su rol y activa o restringe las funcionalidades que tiene permitidas en la interfaz, garantizando el cumplimiento de políticas de acceso seguro.
+- Python 3.10+
+- OpenCV
+- PyQt5
+- TensorFlow / Keras
+- MongoDB o SQLite
+- DeepFace
+- torch / ultralytics
+
+Instalación rápida:
+```bash
+pip install -r requirements.txt
+```
+
+## 🛠️ Funcionalidades Implementadas
+
+| Módulo                 | Funcionalidad                                                                 |
+|------------------------|------------------------------------------------------------------------------|
+| Detección              | Clasificación en tiempo real: REAL, FOTO u OBJETO                            |
+| Grabación              | Activación automática por horarios definidos o eventos                       |
+| Reproducción           | Lista y visualización de videos grabados                                     |
+| Alertas                | Notificaciones visuales y sonoras con configuración personalizada            |
+| Estado de cámaras      | Indicadores dinámicos (verde/rojo) y logs de conexión/desconexión            |
+| Adición de cámaras     | Detección automática y arrastrar a celdas para transmisión                   |
+| Gestión de usuarios    | Crear, modificar, eliminar usuarios y asignar roles                          |
+
+## 📊 Historias de Usuario
+
+- Historia 1: Detector de personas reales, fotos o cosas
+- Historia 2: Acceso a grabaciones de cámaras
+- Historia 3: Recepción de alertas por intrusos
+- Historia 4: Configuración de horarios de grabación
+- Historia 5: Personalización del tipo de alertas
+- Historia 6: Estado y monitoreo de cámaras
+- Historia 7: Integración de nuevas cámaras
+- Historia 8: Gestión de usuarios y permisos
+
+## 🚀 Ejecución
+
+```bash
+python main.py
+```
+
+El sistema abrirá el Dashboard principal desde donde se puede navegar entre módulos.
+
+## 📁 Base de Datos
+
+Este sistema puede utilizar **SQLite o MongoDB**, con modelos de usuario, cámaras, grabaciones, alertas y configuración.
+
+## 🔐 Seguridad
+
+- Acceso controlado por roles
+- Registro de actividad
+- Validación contra suplantación facial
+
+## 📄 Licencia
+
+Proyecto desarrollado con fines educativos y de investigación en sistemas de seguridad inteligentes.  
+© 2025 - [Jhessith Lopez Heredia]
